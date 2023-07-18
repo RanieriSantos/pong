@@ -88,7 +88,7 @@
       });
       return;
     }
-    io.emit("join", { name: $playerStore.name, side: $playerStore.side });
+    io.emit("createRoom", { name: $playerStore.name, side: $playerStore.side });
   }
 </script>
 

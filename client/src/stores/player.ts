@@ -6,4 +6,5 @@ export const playerStore = writable({
   side: "",
   name: "",
   ready: false,
+  roomId: "",
 });

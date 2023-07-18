@@ -10,10 +10,12 @@ export class Player {
   private paddlePositionY: number = 0;
   private paddleHeight: number = 100;
   private paddleWidth: number = 15;
+  private gameId: string | undefined;
 
-  constructor(player_name: string, side: Side) {
+  constructor(player_name: string, side: Side, gameId: string) {
     this.playerName = player_name;
     this.side = side;
+    this.gameId = gameId;
   }
 
   increasePointsbyOne() {
@@ -43,8 +45,12 @@ export class Player {
   get getPlayerPoints() {
     return this.points;
   }
-  
+
   get getPlayerName() {
     return this.playerName;
+  }
+
+  get getGameId() {
+    return this.gameId;
   }
 }

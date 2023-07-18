@@ -1,13 +1,14 @@
 import { Server, Socket } from "socket.io";
 import { Player } from "./model/player";
+import { v4 as uuidv4 } from 'uuid';
 
 export class Game {
-  static instance: Game | null;
-
   private players = new Map<Socket, Player>();
 
   private width = 1024;
   private height = 768;
+
+  private id: string = uuidv4()
 
   private ball = {
     x: this.width / 2,
@@ -16,13 +17,6 @@ export class Game {
     velocityX: 0.2 * this.coinToss(),
     velocityY: 0.2 * this.coinToss(),
   };
-
-  constructor() {
-    if (Game.instance) {
-      return Game.instance;
-    }
-    Game.instance = this;
-  }
 
   findPlayerBySide(side: string) {
     for (let player of this.players) {
@@ -147,5 +141,9 @@ export class Game {
 
   get getBall() {
     return this.ball;
+  }
+
+  get getGameId() {
+    return this.id
   }
 }
