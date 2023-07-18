@@ -26,7 +26,8 @@ io.on("connection", (socket) => {
 
   socket.on("join", (data) => {
     if (games.size == 0 || !games.has(data.gameId)) {
-      socket.emit("notFound");
+      data.message = "Room not found";
+      socket.emit("notFound", data);
       return;
     }
 
@@ -39,13 +40,16 @@ io.on("connection", (socket) => {
       }
 
       if (game.addPlayer(socket, new Player(data.playerName, data.side, data.gameId))) {
+        socket.join(data.gameId);
         if (game.getPlayersSize == 2) {
           setInterval(() => {
             if (game) {
+              game
               io.emit("ballPosition", game.updateGameState(io));
             }
           }, 1);
         }
+        data.gameId = game.getGameId;
         socket.emit("join", data);
         socket.emit("ballPosition", game.getBall);
       } else {
@@ -56,6 +60,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("mouseMove", (data) => {
+    socket.join(data.gameId);
     let game = games.get(data.gameId);
     if (game) {
       if (data.side == "left") {

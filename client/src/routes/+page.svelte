@@ -1,23 +1,26 @@
 <script>
-  import GlobalChat from "../components/globalChat.svelte";
+  function joinAlert() {
+    
+  }
 </script>
 
-<div id="gameMenuContainer">
-  <div id="gameMenu">
-    <h1>PGON</h1>
-    <h4>Pong Game Over Network</h4>
+<section>
+  <div id="gameMenuContainer">
+    <div id="gameMenu">
+      <h1>PGON</h1>
+      <h4>Pong Game Over Network</h4>
 
-    <div>
-      <button>
-        <a href="/match">Create lobby</a>
-      </button>
-      <button>
-        <a href="/join">Join lobby</a>
-      </button>
+      <div>
+        <button>
+          <a href="/match">Create lobby</a>
+        </button>
+        <button on:click={joinAlert}>
+          <a href="/join">Join lobby</a>
+        </button>
+      </div>
     </div>
   </div>
-  <GlobalChat />
-</div>
+</section>
 
 <style>
   #gameMenuContainer {
@@ -25,7 +28,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    height: 100%;
   }
 
   #gameMenu {

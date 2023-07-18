@@ -12,7 +12,7 @@
       io.connect();
     });
 
-    io.on("globalChat", (data) => {
+    io.on("roomChat", (data) => {
       const chatMessages = document.getElementById("chat-messages");
       const messageDiv = document.createElement("div");
       const messageSender = document.createElement("span");
@@ -50,11 +50,18 @@
       sendMessage();
     }
   }
+
+  window.addEventListener("updateId", () => {
+    localStorage.getItem("gameId");
+  });
 </script>
 
-<div id="global-chat">
-  <div id="global-chat-header">
-    <h1>Global Chat</h1>
+<div id="room-chat">
+  <div>
+    <h1>Room id: {localStorage.getItem("gameId")}</h1>
+  </div>
+  <div id="room-chat-header">
+    <h1>Room Chat</h1>
   </div>
   <div id="chat-box">
     <div id="chat-messages" />
@@ -71,10 +78,10 @@
 </div>
 
 <style>
-  #global-chat {
+  #room-chat {
     position: absolute;
     top: 0;
-    right: 0;
+    left: 0;
     height: 100%;
     background-color: #f0f0f0;
     display: flex;
@@ -107,12 +114,12 @@
     margin-left: 5px;
   }
 
-  #global-chat-header {
+  #room-chat-header {
     padding: 10px;
     border-bottom: 1px solid #ccc;
   }
 
-  #global-chat-header h1 {
+  #room-chat-header h1 {
     margin: 0;
   }
 </style>

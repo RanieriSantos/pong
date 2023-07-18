@@ -3,7 +3,6 @@
   import { onMount } from "svelte";
   import Ball from "../../components/ball.svelte";
   import Paddle from "../../components/paddle.svelte";
-  import PlayerStatus from "../../components/player_status.svelte";
   import { arenaStore } from "../../stores/arena";
   import { ballStore } from "../../stores/ball";
   import { socket } from "../../stores/socket";
@@ -60,8 +59,16 @@
       $ballStore.posY = data.y - data.radius;
     });
 
-    io.on("join", (data: { playerName: string; side: string }) => {
-      isPlayerReady = true;
+    io.on(
+      "join",
+      (data: { playerName: string; side: string; gameId: string }) => {
+        localStorage.setItem("gameId", data.gameId);
+        isPlayerReady = true;
+      }
+    );
+
+    io.on("disconnect", () => {
+      localStorage.removeItem("gameId");
     });
 
     io.on("sideNotAvailable", () => {
@@ -92,41 +99,48 @@
   }
 </script>
 
-<div id="matchDiv">
-  {#if !isPlayerReady}
-    <div id="sideSelection">
-      <form on:submit|preventDefault={collectPlayerData}>
-        <label>
-          Name:
-          <input type="text" bind:value={$playerStore.name} />
-        </label>
-        <label>
-          Side:
-          <select bind:value={$playerStore.side}>
-            {#each [Side.Left, Side.Right] as side}
-              <option value={side}>{side}</option>
-            {/each}
-          </select>
-        </label>
-        <button type="submit">Submit</button>
-      </form>
-    </div>
-  {:else}
-    <div
-      id="game"
-      style:height="{$arenaStore.height}px"
-      style:width="{$arenaStore.width}px"
-      on:mousemove={handleMousemove}
-    >
-      <div class="vline" />
-      <Ball posX={$ballStore.posX} posY={$ballStore.posY} />
-      <Paddle on:mousemove side={Side.Left} posY={leftPaddlePosY} height={0} />
-      <Paddle
-        on:mousemove
-        side={Side.Right}
-        posY={rightPaddlePosY}
-        height={0}
-      />
-    </div>
-  {/if}
-</div>
+<section>
+  <div id="matchDiv">
+    {#if !isPlayerReady}
+      <div id="sideSelection">
+        <form on:submit|preventDefault={collectPlayerData}>
+          <label>
+            Name:
+            <input type="text" bind:value={$playerStore.name} />
+          </label>
+          <label>
+            Side:
+            <select bind:value={$playerStore.side}>
+              {#each [Side.Left, Side.Right] as side}
+                <option value={side}>{side}</option>
+              {/each}
+            </select>
+          </label>
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+    {:else}
+      <div
+        id="game"
+        style:height="{$arenaStore.height}px"
+        style:width="{$arenaStore.width}px"
+        on:mousemove={handleMousemove}
+      >
+        <div class="vline" />
+        <Ball posX={$ballStore.posX} posY={$ballStore.posY} />
+        <Paddle
+          on:mousemove
+          side={Side.Left}
+          posY={leftPaddlePosY}
+          height={0}
+        />
+        <Paddle
+          on:mousemove
+          side={Side.Right}
+          posY={rightPaddlePosY}
+          height={0}
+        />
+      </div>
+    {/if}
+  </div>
+</section>
