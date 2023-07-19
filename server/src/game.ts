@@ -2,6 +2,11 @@ import { Server, Socket } from "socket.io";
 import { Player } from "./model/player";
 import { v4 as uuidv4 } from 'uuid';
 
+enum Side {
+  Left = "left",
+  Right = "right",
+}
+
 export class Game {
   private players = new Map<Socket, Player>();
 
@@ -49,13 +54,6 @@ export class Game {
   }
 
   detectPaddleHit(
-    ball: {
-      x: number;
-      y: number;
-      radius: number;
-      velocityY: number;
-      velocityX: number;
-    },
     paddleY: number,
     paddleHeight: number
   ) {
@@ -63,32 +61,31 @@ export class Game {
     const paddleBottom = paddleY + paddleHeight;
 
     // check for collision with left wall
-    if (ball.x - ball.radius <= 20) {
+    if (this.ball.x - this.ball.radius <= 20) {
       if (
-        ball.y + ball.radius >= paddleTop - 100 &&
-        ball.y - ball.radius <= paddleBottom - 100
+        this.ball.y + this.ball.radius >= paddleTop - 100 &&
+        this.ball.y - this.ball.radius <= paddleBottom - 100
       ) {
-        ball.velocityY = -ball.velocityY;
-        ball.velocityX = -ball.velocityX;
+        this.ball.velocityY = -this.ball.velocityY;
+        this.ball.velocityX = -this.ball.velocityX;
       }
     }
 
     // check for collision with right wall
-    if (ball.x + ball.radius >= this.width - 20) {
+    if (this.ball.x + this.ball.radius >= this.width - 20) {
       if (
-        ball.y + ball.radius >= paddleTop - 100 &&
-        ball.y - ball.radius <= paddleBottom - 100
+        this.ball.y + this.ball.radius >= paddleTop - 100 &&
+        this.ball.y - this.ball.radius <= paddleBottom - 100
       ) {
-        ball.velocityY = -ball.velocityY;
-        ball.velocityX = -ball.velocityX;
+        this.ball.velocityY = -this.ball.velocityY;
+        this.ball.velocityX = -this.ball.velocityX;
       }
     }
   }
 
-  updateGameState(io: Server) {
+  updateGameState(io: Server, roomId: string) {
     for (const [socket, player] of this.players.entries()) {
       this.detectPaddleHit(
-        this.ball,
         player.paddlePosition,
         player.getPlayerHeight
       );
@@ -112,9 +109,9 @@ export class Game {
       if (player) {
         player[1].increasePointsbyOne();
         if (player[1].getPlayerPoints === 5) {
-          io.emit("gameOver", player[1].getPlayerSide);
+          io.to(roomId).emit("gameOver", player[1].getPlayerSide);
         }
-        io.emit("increaseScore", player[1].getPlayerSide);
+        io.to(roomId).emit("increaseScore", player[1].getPlayerSide);
       }
       this.ball.velocityX = -this.ball.velocityX;
     }
@@ -125,14 +122,19 @@ export class Game {
     return this.ball;
   }
 
-  updatePlayerPosition(socket: Socket, data: { y: number }, io: Server) {
+  updatePlayerPosition(socket: Socket, data: { y: number, roomId: string }, io: Server) {
     const player = this.players.get(socket);
     if (player) {
       if (!(data.y <= 0 || data.y >= this.height)) {
         player?.setPaddlePositionY(data.y);
-        io.emit("mouseMove", data);
+        io.to(data.roomId).emit("mouseMove", data);
       }
     }
+  }
+
+  remainingSide(socket: Socket) {
+    const player = this.players.get(socket);
+    return player?.getPlayerSide === Side.Left ? Side.Left : Side.Right;
   }
 
   get getPlayersSize() {

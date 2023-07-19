@@ -25,13 +25,17 @@ io.on("connection", (socket) => {
   });*/
 
   socket.on("join", (data) => {
-    if (games.size == 0 || !games.has(data.gameId)) {
+    let game: Game | undefined;
+
+    if (!games.get(data.roomId)) {
       data.message = "Room not found";
       socket.emit("notFound", data);
       return;
     }
 
-    let game = games.get(data.gameId);
+    socket.emit("roomFound", data);
+
+    /*game = games.get(data.gameId);
 
     if (game) {
       if (game.getPlayersSize == 2) {
@@ -56,12 +60,11 @@ io.on("connection", (socket) => {
         socket.emit("sideNotAvailabe");
         return;
       }
-    }
+    }*/
   });
 
   socket.on("mouseMove", (data) => {
-    socket.join(data.gameId);
-    let game = games.get(data.gameId);
+    let game = games.get(data.roomId);
     if (game) {
       if (data.side == "left") {
         game.updatePlayerPosition(socket, data, io);
@@ -71,23 +74,12 @@ io.on("connection", (socket) => {
     }
   });
 
-  /*socket.on("startMatch", () => {
-    setInterval(() => {
-      if (game) {
-        io.emit("ballPosition", game.updateGameState(io));
-      }
-      io.on("gameOver", () => {
-        game = null;
-      });
-    }, 1);
-  });*/
-
   socket.on("globalChat", (data) => {
     io.emit("globalChat", data);
   });
 
   socket.on("roomChat", (data) => {
-    socket.to(data.gameId).emit("roomChat", data);
+    io.to(data.roomId).emit("roomChat", data);
   });
 
   socket.on("createRoom", (data) => {
@@ -97,6 +89,34 @@ io.on("connection", (socket) => {
     socket.join(game.getGameId);
     data.gameId = game.getGameId;
     socket.emit("join", data);
+  });
+
+  socket.on("joinRoom", (data) => {
+    socket.join(data.roomId);
+    let game = games.get(data.roomId);
+    if (game) {
+      if (game.getPlayersSize == 2) {
+        socket.emit("gameIsFull");
+        return;
+      }
+      if (game.addPlayer(socket, new Player(data.playerName, game.remainingSide(socket), data.gameId))) {
+        data.side = game.remainingSide(socket);
+        socket.emit("roomFound", data);
+        if (game.getPlayersSize == 2) {
+          setInterval(() => {
+            if (game) {
+              io.to(data.roomId).emit("ballPosition", game.updateGameState(io, data.roomId));
+            }
+          }, 1);
+        }
+        data.gameId = game.getGameId;
+        socket.emit("join", data);
+        socket.emit("ballPosition", game.getBall);
+      } else {
+        socket.emit("sideNotAvailabe");
+        return;
+      }
+    }
   });
 
 });

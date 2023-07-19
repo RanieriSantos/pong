@@ -13,7 +13,7 @@
     });
 
     io.on("globalChat", (data) => {
-      const chatMessages = document.getElementById("chat-messages");
+      const chatMessages = document.getElementById("global-chat-messages");
       const messageDiv = document.createElement("div");
       const messageSender = document.createElement("span");
       const messageText = document.createElement("span");
@@ -57,8 +57,8 @@
     <h1>Global Chat</h1>
   </div>
   <div id="chat-box">
-    <div id="chat-messages" />
-    <div id="chat-input">
+    <div id="global-chat-messages" />
+    <div id="global-chat-input">
       <input
         type="text"
         placeholder="Type a message"
@@ -89,21 +89,21 @@
     flex-direction: column;
   }
 
-  #chat-messages {
+  #global-chat-messages {
     flex: 1;
     overflow-y: scroll;
   }
 
-  #chat-input {
+  #global-chat-input {
     display: flex;
     flex-direction: row;
   }
 
-  #chat-input input {
+  #global-chat-input input {
     flex: 1;
   }
 
-  #chat-input button {
+  #global-chat-input button {
     margin-left: 5px;
   }
 

@@ -19,12 +19,20 @@
   let rightPaddlePosY = 0;
   let io: Socket;
   let isPlayerReady = false;
+  let roomId = "";
 
   onMount(() => {
     socket.subscribe((socket) => {
       io = socket;
       io.connect();
     });
+
+    if (localStorage.getItem("roomId")) {
+      io.emit("joinRoom", {
+        roomId: localStorage.getItem("roomId"),
+      });
+      roomId = localStorage.getItem("roomId") || "";
+    }
 
     io.on("mouseMove", (data: { side: string; y: number }) => {
       if (data.side === Side.Left) {
@@ -62,13 +70,13 @@
     io.on(
       "join",
       (data: { playerName: string; side: string; gameId: string }) => {
-        localStorage.setItem("gameId", data.gameId);
+        localStorage.setItem("roomId", data.gameId);
         isPlayerReady = true;
       }
     );
 
     io.on("disconnect", () => {
-      localStorage.removeItem("gameId");
+      localStorage.removeItem("roomId");
     });
 
     io.on("sideNotAvailable", () => {
@@ -81,10 +89,18 @@
         showConfirmButton: false,
       });
     });
+
+    io.on("roomFound", (data) => {
+      $playerStore.side = data.side;
+    });
   });
 
   function handleMousemove(e: MouseEvent) {
-    io.emit("mouseMove", { side: $playerStore.side, y: e.clientY });
+    io.emit("mouseMove", {
+      side: $playerStore.side,
+      y: e.clientY,
+      roomId: localStorage.getItem("roomId"),
+    });
   }
 
   function collectPlayerData() {

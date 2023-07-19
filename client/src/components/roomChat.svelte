@@ -5,6 +5,7 @@
 
   let io: Socket;
   let message = "";
+  let gameId = "";
 
   onMount(() => {
     socket.subscribe((socket) => {
@@ -13,7 +14,7 @@
     });
 
     io.on("roomChat", (data) => {
-      const chatMessages = document.getElementById("chat-messages");
+      const chatMessages = document.getElementById("room-chat-messages");
       const messageDiv = document.createElement("div");
       const messageSender = document.createElement("span");
       const messageText = document.createElement("span");
@@ -34,14 +35,19 @@
         chatMessages.appendChild(messageDiv);
       }
     });
+
+    window.addEventListener("updateId", () => {
+      gameId = localStorage.getItem("roomId")?.toString() || "";
+    });
   });
 
   function sendMessage() {
     const data = {
       id: io.id,
       message: message,
+      roomId: gameId,
     };
-    io.emit("globalChat", data);
+    io.emit("roomChat", data);
     message = "";
   }
 
@@ -50,22 +56,18 @@
       sendMessage();
     }
   }
-
-  window.addEventListener("updateId", () => {
-    localStorage.getItem("gameId");
-  });
 </script>
 
 <div id="room-chat">
   <div>
-    <h1>Room id: {localStorage.getItem("gameId")}</h1>
+    <h1>Room id: {gameId}</h1>
   </div>
   <div id="room-chat-header">
     <h1>Room Chat</h1>
   </div>
   <div id="chat-box">
-    <div id="chat-messages" />
-    <div id="chat-input">
+    <div id="room-chat-messages" />
+    <div id="room-chat-input">
       <input
         type="text"
         placeholder="Type a message"
@@ -96,21 +98,21 @@
     flex-direction: column;
   }
 
-  #chat-messages {
+  #room-chat-messages {
     flex: 1;
     overflow-y: scroll;
   }
 
-  #chat-input {
+  #room-chat-input {
     display: flex;
     flex-direction: row;
   }
 
-  #chat-input input {
+  #room-chat-input input {
     flex: 1;
   }
 
-  #chat-input button {
+  #room-chat-input button {
     margin-left: 5px;
   }
 
